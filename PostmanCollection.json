@@ -1,0 +1,2493 @@
+{
+  "info": {
+    "name": "GreenRoots API — Full Test Suite",
+    "_postman_id": "greenroots-full-collection-v1",
+    "description": "Complete test suite for the GreenRoots Urban Farming Platform API.\n\n**Setup:**\n1. Set base_url variable to http://localhost:4000\n2. Run 'Auth / Register Admin' or 'Auth / Login as Admin' first\n3. Tokens are auto-saved to collection variables\n\n**Variables used:**\n- base_url\n- admin_token\n- vendor_token\n- customer_token\n- vendor_id\n- produce_id\n- order_id\n- post_id\n- rental_id\n- cert_id\n- plant_log_id",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "vendor_token",
+      "value": ""
+    },
+    {
+      "key": "customer_token",
+      "value": ""
+    },
+    {
+      "key": "vendor_id",
+      "value": ""
+    },
+    {
+      "key": "produce_id",
+      "value": ""
+    },
+    {
+      "key": "order_id",
+      "value": ""
+    },
+    {
+      "key": "post_id",
+      "value": ""
+    },
+    {
+      "key": "rental_id",
+      "value": ""
+    },
+    {
+      "key": "cert_id",
+      "value": ""
+    },
+    {
+      "key": "plant_log_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register — Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Has id, name, email, role', () => {",
+                  "  const d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.all.keys('id','name','email','role');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Customer\",\n  \"email\": \"customer_test@greenroots.dev\",\n  \"password\": \"Customer@1234\",\n  \"role\": \"CUSTOMER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register — Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Role is VENDOR', () => pm.expect(pm.response.json().data.role).to.equal('VENDOR'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Vendor\",\n  \"email\": \"vendor_test@greenroots.dev\",\n  \"password\": \"Vendor@1234\",\n  \"role\": \"VENDOR\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register — Duplicate Email (expect 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);",
+                  "pm.test('Error message present', () => pm.expect(pm.response.json().message).to.include('registered'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Duplicate\",\n  \"email\": \"customer_test@greenroots.dev\",\n  \"password\": \"Customer@1234\",\n  \"role\": \"CUSTOMER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register — Invalid Role (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bad Role\",\n  \"email\": \"badrole@greenroots.dev\",\n  \"password\": \"Test@1234\",\n  \"role\": \"SUPERUSER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has token', () => pm.expect(pm.response.json().data.token).to.be.a('string'));",
+                  "const token = pm.response.json().data.token;",
+                  "pm.collectionVariables.set('admin_token', token);",
+                  "pm.test('Admin token saved', () => pm.expect(pm.collectionVariables.get('admin_token')).to.equal(token));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@greenroots.dev\",\n  \"password\": \"Admin@1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const token = pm.response.json().data.token;",
+                  "pm.collectionVariables.set('vendor_token', token);",
+                  "pm.test('Vendor token saved', () => pm.expect(token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor_test@greenroots.dev\",\n  \"password\": \"Vendor@1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const token = pm.response.json().data.token;",
+                  "pm.collectionVariables.set('customer_token', token);",
+                  "pm.test('Customer token saved', () => pm.expect(token).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer_test@greenroots.dev\",\n  \"password\": \"Customer@1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login — Wrong Password (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@greenroots.dev\",\n  \"password\": \"wrongpassword\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Profile — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is ADMIN', () => pm.expect(pm.response.json().data.role).to.equal('ADMIN'));",
+                  "pm.test('No password in response', () => pm.expect(pm.response.json().data).to.not.have.property('password'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/me"
+          }
+        },
+        {
+          "name": "Get My Profile — No Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌾 Vendors",
+      "item": [
+        {
+          "name": "Create Vendor Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('vendor_id', d.id);",
+                  "pm.test('Vendor ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('certificationStatus is PENDING', () => pm.expect(d.certificationStatus).to.equal('PENDING'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/profile",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmName\": \"Test Green Farm\",\n  \"farmLocation\": \"Dhaka, Bangladesh\",\n  \"bio\": \"We grow fresh organic vegetables.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Vendor Profile — Duplicate (expect 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/profile",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farmName\": \"Duplicate Farm\",\n  \"farmLocation\": \"Dhaka, Bangladesh\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Vendor Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has farmName', () => pm.expect(pm.response.json().data.farmName).to.be.a('string'));",
+                  "pm.test('Has produce array', () => pm.expect(pm.response.json().data.produce).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/profile/me"
+          }
+        },
+        {
+          "name": "Update Vendor Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Bio updated', () => pm.expect(pm.response.json().data.bio).to.include('Updated'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/profile/me",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Updated — specialising in rooftop organic farming.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Vendors — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/all"
+          }
+        },
+        {
+          "name": "Get All Vendors — Filter PENDING",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All are PENDING', () => {",
+                  "  pm.response.json().data.forEach(v => pm.expect(v.certificationStatus).to.equal('PENDING'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/all?status=PENDING"
+          }
+        },
+        {
+          "name": "Get All Vendors — Customer (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/all"
+          }
+        },
+        {
+          "name": "Approve Vendor — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('certificationStatus is APPROVED', () => pm.expect(pm.response.json().data.certificationStatus).to.equal('APPROVED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/vendors/approve/{{vendor_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🥦 Marketplace",
+      "item": [
+        {
+          "name": "Create Produce Listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('produce_id', d.id);",
+                  "pm.test('Produce ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('certificationStatus is PENDING', () => pm.expect(d.certificationStatus).to.equal('PENDING'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/marketplace",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Organic Tomatoes\",\n  \"description\": \"Fresh sun-ripened organic tomatoes grown without pesticides.\",\n  \"price\": 85.00,\n  \"category\": \"Vegetables\",\n  \"availableQuantity\": 150\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Produce — Missing Required Fields (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/marketplace",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Incomplete Item\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Produce — Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has data array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.have.property('total'));",
+                  "pm.test('Has hasNext flag', () => pm.expect(pm.response.json().data.pagination).to.have.property('hasNext'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace"
+          }
+        },
+        {
+          "name": "Get All Produce — Filter by Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All items are Vegetables', () => {",
+                  "  pm.response.json().data.data.forEach(p => pm.expect(p.category).to.equal('Vegetables'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace?category=Vegetables"
+          }
+        },
+        {
+          "name": "Get All Produce — Filter inStock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All items have quantity > 0', () => {",
+                  "  pm.response.json().data.data.forEach(p => pm.expect(p.availableQuantity).to.be.above(0));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace?inStock=true"
+          }
+        },
+        {
+          "name": "Get All Produce — Price Range Filter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All prices within range', () => {",
+                  "  pm.response.json().data.data.forEach(p => {",
+                  "    pm.expect(p.price).to.be.at.least(10);",
+                  "    pm.expect(p.price).to.be.at.most(200);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace?minPrice=10&maxPrice=200"
+          }
+        },
+        {
+          "name": "Get All Produce — Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Max 5 items returned', () => pm.expect(pm.response.json().data.data.length).to.be.at.most(5));",
+                  "pm.test('Page is 2', () => pm.expect(pm.response.json().data.pagination.page).to.equal(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace?page=2&limit=5"
+          }
+        },
+        {
+          "name": "Get Single Produce by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => pm.expect(pm.response.json().data.id).to.equal(parseInt(pm.collectionVariables.get('produce_id'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace/{{produce_id}}"
+          }
+        },
+        {
+          "name": "Get Single Produce — Not Found (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/marketplace/999999"
+          }
+        },
+        {
+          "name": "Update Produce",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Price updated', () => pm.expect(pm.response.json().data.price).to.equal(95));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/marketplace/{{produce_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Organic Tomatoes\",\n  \"description\": \"Updated description — now certified organic.\",\n  \"price\": 95,\n  \"category\": \"Vegetables\",\n  \"availableQuantity\": 200\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Produce — Wrong Vendor (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/marketplace/{{produce_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Produce Listings — Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/marketplace/vendor/mine"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Orders",
+      "item": [
+        {
+          "name": "Place Order — Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('order_id', d.id);",
+                  "pm.test('Order ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('Status is PENDING', () => pm.expect(d.status).to.equal('PENDING'));",
+                  "pm.test('Quantity is correct', () => pm.expect(d.quantity).to.equal(2));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"quantity\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Place Order — Vendor Tries (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"quantity\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Place Order — Invalid Produce (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": 999999,\n  \"quantity\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Orders — Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has orders array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/my"
+          }
+        },
+        {
+          "name": "Get My Orders — Vendor Tries (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/my"
+          }
+        },
+        {
+          "name": "Get Vendor Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has orders array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/vendor"
+          }
+        },
+        {
+          "name": "Get Vendor Orders — Filter by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/vendor?status=PENDING"
+          }
+        },
+        {
+          "name": "Update Order Status — CONFIRMED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is CONFIRMED', () => pm.expect(pm.response.json().data.status).to.equal('CONFIRMED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Order Status — DELIVERED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is DELIVERED', () => pm.expect(pm.response.json().data.status).to.equal('DELIVERED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DELIVERED\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Order Status — Invalid Status (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/{{order_id}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHIPPED\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Orders — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has orders array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/orders/all"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💬 Forum",
+      "item": [
+        {
+          "name": "Create Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('post_id', d.id);",
+                  "pm.test('Post ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('Has title', () => pm.expect(d.title).to.be.a('string'));",
+                  "pm.test('Tags is array', () => pm.expect(d.tags).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/forum",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Best composting tips for beginners\",\n  \"postContent\": \"After 3 months of trial and error I found that a 3:1 brown-to-green ratio works best in Dhaka's climate.\",\n  \"tags\": [\"composting\", \"organic\", \"beginner\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Post — Missing Fields (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/forum",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Only a title\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Posts — Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('No auth required', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Has posts array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/forum"
+          }
+        },
+        {
+          "name": "Get Posts — Filter by Tag",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All posts have organic tag', () => {",
+                  "  pm.response.json().data.data.forEach(p => pm.expect(p.tags).to.include('organic'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/forum?tag=organic"
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => pm.expect(pm.response.json().data.id).to.equal(parseInt(pm.collectionVariables.get('post_id'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/forum/{{post_id}}"
+          }
+        },
+        {
+          "name": "Get Single Post — Not Found (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/forum/999999"
+          }
+        },
+        {
+          "name": "Delete Post — Owner",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/forum/{{post_id}}"
+          }
+        },
+        {
+          "name": "Delete Already Deleted Post (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/forum/{{post_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏡 Rentals",
+      "item": [
+        {
+          "name": "Create Rental Space",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('rental_id', d.id);",
+                  "pm.test('Rental ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('availability is true', () => pm.expect(d.availability).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/rentals",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": \"Mirpur-10, Dhaka, Bangladesh\",\n  \"size\": \"10x10 m\",\n  \"pricePerMonth\": 2500,\n  \"description\": \"Sunny rooftop plot with water access and shade netting.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Rental — Missing Fields (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/rentals",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": \"Dhaka\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Rental Spaces — Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('No auth required', () => pm.expect(pm.response.code).to.equal(200));",
+                  "pm.test('Has spaces array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rentals"
+          }
+        },
+        {
+          "name": "Get Rentals — Filter by Location",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Results contain Dhaka', () => {",
+                  "  pm.response.json().data.data.forEach(r => pm.expect(r.location.toLowerCase()).to.include('dhaka'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rentals?location=Dhaka"
+          }
+        },
+        {
+          "name": "Get Rentals — Available Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All are available', () => {",
+                  "  pm.response.json().data.data.forEach(r => pm.expect(r.availability).to.be.true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rentals?available=true"
+          }
+        },
+        {
+          "name": "Get Single Rental Space",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('ID matches', () => pm.expect(pm.response.json().data.id).to.equal(parseInt(pm.collectionVariables.get('rental_id'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/rentals/{{rental_id}}"
+          }
+        },
+        {
+          "name": "Update Rental Space",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('availability updated to false', () => pm.expect(pm.response.json().data.availability).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/rentals/{{rental_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availability\": false,\n  \"pricePerMonth\": 2800\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Rental — Wrong Vendor (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 or 404', () => pm.expect(pm.response.code).to.be.oneOf([403, 404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/rentals/{{rental_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availability\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Rental Space",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/rentals/{{rental_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📜 Certifications",
+      "item": [
+        {
+          "name": "Submit Certification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('cert_id', d.id);",
+                  "pm.test('Cert ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('Status is PENDING', () => pm.expect(d.status).to.equal('PENDING'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"certifyingAgency\": \"Bangladesh Organic Certification Board\",\n  \"certificationDate\": \"2024-03-01\",\n  \"expiryDate\": \"2026-03-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit Cert — Missing Fields (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"certifyingAgency\": \"Some Board\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Certifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/my"
+          }
+        },
+        {
+          "name": "Get All Certifications — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/all"
+          }
+        },
+        {
+          "name": "Get All Certs — Filter PENDING",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All are PENDING', () => {",
+                  "  pm.response.json().data.forEach(c => pm.expect(c.status).to.equal('PENDING'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/all?status=PENDING"
+          }
+        },
+        {
+          "name": "Get All Certs — Customer (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/all"
+          }
+        },
+        {
+          "name": "Approve Certification — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/{{cert_id}}/approve"
+          }
+        },
+        {
+          "name": "Reject Certification — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/{{cert_id}}/reject"
+          }
+        },
+        {
+          "name": "Approve Cert — Vendor (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{vendor_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/certs/{{cert_id}}/approve"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌱 Plant Tracking",
+      "item": [
+        {
+          "name": "Log Plant Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('plant_log_id', d.id);",
+                  "pm.test('Log ID saved', () => pm.expect(d.id).to.be.a('number'));",
+                  "pm.test('Stage is growing', () => pm.expect(d.stage).to.equal('growing'));",
+                  "pm.test('healthScore present', () => pm.expect(d.healthScore).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"growing\",\n  \"healthScore\": 88,\n  \"notes\": \"Leaves look healthy. Added compost today.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Log Plant Update — Invalid Stage (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"dead\",\n  \"healthScore\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "Log Plant Update — Invalid Health Score (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"seedling\",\n  \"healthScore\": 150\n}"
+            }
+          }
+        },
+        {
+          "name": "Log All 4 Stages — seedling",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"seedling\",\n  \"healthScore\": 100,\n  \"notes\": \"Just planted.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Log All 4 Stages — flowering",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"flowering\",\n  \"healthScore\": 92,\n  \"notes\": \"First flowers appearing.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Log All 4 Stages — harvest-ready",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produceId\": {{produce_id}},\n  \"stage\": \"harvest-ready\",\n  \"healthScore\": 97,\n  \"notes\": \"Ready to harvest!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Plant Logs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has logs array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants/my"
+          }
+        },
+        {
+          "name": "Get My Plant Logs — Filter by ProduceId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All logs match produce', () => {",
+                  "  const pid = parseInt(pm.collectionVariables.get('produce_id'));",
+                  "  pm.response.json().data.data.forEach(l => pm.expect(l.produceId).to.equal(pid));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants/my?produceId={{produce_id}}"
+          }
+        },
+        {
+          "name": "Get Plant Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Data is array', () => pm.expect(pm.response.json().data).to.be.an('array'));",
+                  "pm.test('Each entry has stage', () => {",
+                  "  pm.response.json().data.forEach(l => pm.expect(l.stage).to.be.a('string'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{customer_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/plants/summary"
+          }
+        },
+        {
+          "name": "Get Plant Logs — No Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/plants/my"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛠️ Admin",
+      "item": [
+        {
+          "name": "Get Platform Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.test('Has users object', () => pm.expect(d.users).to.have.all.keys('total','vendors','customers'));",
+                  "pm.test('Has produce count', () => pm.expect(d.produce).to.be.a('number'));",
+                  "pm.test('Has orders count', () => pm.expect(d.orders).to.be.a('number'));",
+                  "pm.test('Has certifications', () => pm.expect(d.certifications).to.have.property('total'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/stats"
+          }
+        },
+        {
+          "name": "Get Platform Stats — No Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/admin/stats"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has users array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('No passwords exposed', () => {",
+                  "  pm.response.json().data.data.forEach(u => pm.expect(u).to.not.have.property('password'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users"
+          }
+        },
+        {
+          "name": "Get All Users — Filter by Role VENDOR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('All users are VENDOR', () => {",
+                  "  pm.response.json().data.data.forEach(u => pm.expect(u.role).to.equal('VENDOR'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users?role=VENDOR"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has id field', () => pm.expect(pm.response.json().data.id).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/1"
+          }
+        },
+        {
+          "name": "Get User by ID — Not Found (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/999999"
+          }
+        },
+        {
+          "name": "Update User Status — Suspend",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is suspended', () => pm.expect(pm.response.json().data.status).to.equal('suspended'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/2/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update User Status — Reactivate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is active', () => pm.expect(pm.response.json().data.status).to.equal('active'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/2/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update User Status — Invalid Value (expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/2/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"frozen\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve Vendor — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('certificationStatus APPROVED', () => pm.expect(pm.response.json().data.certificationStatus).to.equal('APPROVED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/vendors/{{vendor_id}}/approve"
+          }
+        },
+        {
+          "name": "Get All Orders — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has orders array', () => pm.expect(pm.response.json().data.data).to.be.an('array'));",
+                  "pm.test('Has pagination', () => pm.expect(pm.response.json().data.pagination).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/orders"
+          }
+        },
+        {
+          "name": "Delete User — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/2"
+          }
+        },
+        {
+          "name": "Delete Admin Account (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "{{base_url}}/api/admin/users/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚡ Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('success is true', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "pm.test('Has uptime', () => pm.expect(pm.response.json().uptime).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          }
+        },
+        {
+          "name": "Unknown Route — 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('success is false', () => pm.expect(pm.response.json().success).to.be.false);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/doesnotexist"
+          }
+        }
+      ]
+    }
+  ]
+}

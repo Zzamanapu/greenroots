@@ -44,7 +44,7 @@ setupSwagger(app)
 
 // ── Health check ───────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
-  res.json({ success: true, message: 'GreenRoots API is running 🌿', uptime: process.uptime() })
+  res.json({ success: true, message: 'GreenRoots API is running', uptime: process.uptime() })
 })
 
 // ── 404 handler ────────────────────────────────────────────────────────────
