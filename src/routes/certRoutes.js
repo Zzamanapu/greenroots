@@ -14,7 +14,7 @@ const router = express.Router()
 router.post('/', verifyToken, permitOnly('VENDOR'), submitCertification)
 router.get('/my', verifyToken, permitOnly('VENDOR'), getMyCertifications)
 
-// Admin — supports ?status=PENDING|APPROVED|REJECTED
+// Admin 
 router.get('/all', verifyToken, permitOnly('ADMIN'), getAllCertifications)
 router.patch('/:id/approve', verifyToken, permitOnly('ADMIN'), approveCertification)
 router.patch('/:id/reject', verifyToken, permitOnly('ADMIN'), rejectCertification)

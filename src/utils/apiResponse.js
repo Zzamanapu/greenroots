@@ -1,5 +1,4 @@
 /**
- * Send a standardised success response.
  * @param {import('express').Response} res
  * @param {string} message
  * @param {*} data
@@ -14,7 +13,6 @@ export const successResponse = (res, message = 'Success', data = null, statusCod
 }
 
 /**
- * Send a standardised error response.
  * @param {import('express').Response} res
  * @param {string} message
  * @param {number} statusCode
@@ -28,10 +26,9 @@ export const errorResponse = (res, message = 'Something went wrong', statusCode 
 }
 
 /**
- * Build a pagination metadata object.
- * @param {number} total  - total matching records
- * @param {number} page   - current page (1-indexed)
- * @param {number} limit  - records per page
+ * @param {number} total  
+ * @param {number} page  
+ * @param {number} limit  
  */
 export const paginationMeta = (total, page, limit) => ({
   total,

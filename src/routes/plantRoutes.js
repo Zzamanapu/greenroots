@@ -8,9 +8,8 @@ import { verifyToken } from '../middlewares/authMiddleware.js'
 
 const router = express.Router()
 
-// All authenticated users can track plants
-router.post('/', verifyToken, logPlantUpdate)              // Log a new update
-router.get('/my', verifyToken, getMyPlantLogs)             // Full history — supports ?produceId=
-router.get('/summary', verifyToken, getPlantSummary)       // Latest status per plant
+router.post('/', verifyToken, logPlantUpdate)             
+router.get('/my', verifyToken, getMyPlantLogs)             
+router.get('/summary', verifyToken, getPlantSummary)      
 
 export default router

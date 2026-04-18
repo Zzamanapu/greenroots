@@ -9,9 +9,9 @@ import { verifyToken } from '../middlewares/authMiddleware.js'
 
 const router = express.Router()
 
-router.get('/', getAllPosts)                         // Public — supports ?tag=
-router.get('/:id', getPostById)                     // Public
-router.post('/', verifyToken, createPost)           // Any authenticated user
-router.delete('/:id', verifyToken, deletePost)      // Owner or Admin
+router.get('/', getAllPosts)                         
+router.get('/:id', getPostById)                     
+router.post('/', verifyToken, createPost)           
+router.delete('/:id', verifyToken, deletePost)      
 
 export default router

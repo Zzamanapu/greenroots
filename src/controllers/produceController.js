@@ -120,7 +120,7 @@ export const deleteProduce = async (req, res) => {
 
     const produce = await prisma.produce.findUnique({ where: { id: parseInt(req.params.id) } })
     if (!produce) return errorResponse(res, 'Produce not found.', 404)
-    if (produce.vendorId !== vendor.id) return errorResponse(res, 'Not authorised.', 403)
+    if (produce.vendorId !== vendor.id) return errorResponse(res, 'Not authorized.', 403)
 
     await prisma.produce.delete({ where: { id: parseInt(req.params.id) } })
     return successResponse(res, 'Produce deleted.')

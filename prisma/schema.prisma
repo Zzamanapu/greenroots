@@ -33,14 +33,14 @@ enum OrderStatus {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  name          String
-  email         String         @unique
-  password      String
-  role          Role           @default(CUSTOMER)
-  status        UserStatus     @default(active)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(CUSTOMER)
+  status    UserStatus @default(active)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   vendorProfile VendorProfile?
   orders        Order[]
@@ -66,48 +66,48 @@ model VendorProfile {
 }
 
 model Produce {
-  id                  Int        @id @default(autoincrement())
+  id                  Int           @id @default(autoincrement())
   vendorId            Int
   vendor              VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   name                String
   description         String
   price               Float
   category            String
-  certificationStatus CertStatus @default(PENDING)
-  availableQuantity   Int        @default(0)
+  certificationStatus CertStatus    @default(PENDING)
+  availableQuantity   Int           @default(0)
   imageUrl            String?
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
-  orders              Order[]
-  plantLogs           PlantLog[]
+  orders    Order[]
+  plantLogs PlantLog[]
 }
 
 model RentalSpace {
-  id           Int           @id @default(autoincrement())
-  vendorId     Int
-  vendor       VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  location     String
-  size         String
+  id            Int           @id @default(autoincrement())
+  vendorId      Int
+  vendor        VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  location      String
+  size          String
   pricePerMonth Float
-  availability Boolean       @default(true)
-  description  String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  availability  Boolean       @default(true)
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Order {
-  id        Int         @id @default(autoincrement())
+  id        Int           @id @default(autoincrement())
   userId    Int
-  user      User        @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
   produceId Int
-  produce   Produce     @relation(fields: [produceId], references: [id])
+  produce   Produce       @relation(fields: [produceId], references: [id])
   vendorId  Int
   vendor    VendorProfile @relation(fields: [vendorId], references: [id])
-  quantity  Int         @default(1)
-  status    OrderStatus @default(PENDING)
-  orderDate DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  quantity  Int           @default(1)
+  status    OrderStatus   @default(PENDING)
+  orderDate DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model CommunityPost {
@@ -138,8 +138,8 @@ model PlantLog {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   produceId   Int
   produce     Produce  @relation(fields: [produceId], references: [id])
-  stage       String   // seedling, growing, flowering, harvest-ready
-  healthScore Int      @default(100) // 0-100
+  stage       String 
+  healthScore Int      @default(100) 
   notes       String?
   loggedAt    DateTime @default(now())
 }

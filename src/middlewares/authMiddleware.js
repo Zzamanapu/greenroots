@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { errorResponse } from '../utils/apiResponse.js'
 
-/**
- * Verify JWT and attach decoded payload to req.user.
- */
+
 export const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization
 
@@ -23,8 +21,6 @@ export const verifyToken = (req, res, next) => {
 }
 
 /**
- * Restrict access to users whose role is in the provided list.
- * Must be used AFTER verifyToken.
  * @param {...string} roles
  */
 export const permitOnly = (...roles) => {

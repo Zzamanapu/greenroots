@@ -10,11 +10,11 @@ import { verifyToken, permitOnly } from '../middlewares/authMiddleware.js'
 
 const router = express.Router()
 
-// Public — supports ?location= and ?available=true
+// Public 
 router.get('/', getAllRentalSpaces)
 router.get('/:id', getRentalSpaceById)
 
-// Vendor only
+// Vendor
 router.post('/', verifyToken, permitOnly('VENDOR'), createRentalSpace)
 router.patch('/:id', verifyToken, permitOnly('VENDOR'), updateRentalSpace)
 router.delete('/:id', verifyToken, permitOnly('VENDOR'), deleteRentalSpace)

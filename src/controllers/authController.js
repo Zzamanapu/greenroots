@@ -92,3 +92,8 @@ export const getMe = async (req, res) => {
     return errorResponse(res, err.message, 500)
   }
 }
+
+
+export const logout = async (req, res) => {
+  return successResponse(res, 'Logged out successfully. Please delete your token on the client side.')
+}

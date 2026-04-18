@@ -48,7 +48,7 @@ async function wipeDatabase() {
   await prisma.rentalSpace.deleteMany()
   await prisma.vendorProfile.deleteMany()
   await prisma.user.deleteMany()
-  console.log('🗑️  Existing records cleared.')
+  console.log('Existing records cleared.')
 }
 
 async function seedAdmin() {
@@ -62,7 +62,7 @@ async function seedAdmin() {
       status: 'active',
     },
   })
-  console.log('👤 Admin created:', admin.email)
+  console.log('Admin created:', admin.email)
   return admin
 }
 
@@ -96,7 +96,7 @@ async function seedVendors() {
     profiles.push(profile)
   }
 
-  console.log(`🌾 ${VENDOR_COUNT} vendor accounts created`)
+  console.log(`${VENDOR_COUNT} vendor accounts created`)
   return { vendors, profiles }
 }
 
@@ -115,7 +115,7 @@ async function seedProduce(vendorProfiles) {
       },
     })
   }
-  console.log(`🥦 ${PRODUCE_COUNT} produce items created`)
+  console.log(`${PRODUCE_COUNT} produce items created`)
 }
 
 async function seedCustomers() {
@@ -133,7 +133,7 @@ async function seedCustomers() {
     })
     customers.push(user)
   }
-  console.log(`🛒 ${CUSTOMER_COUNT} customer accounts created`)
+  console.log(`${CUSTOMER_COUNT} customer accounts created`)
   return customers
 }
 
@@ -153,7 +153,7 @@ async function seedOrders(customers, vendorProfiles) {
       },
     })
   }
-  console.log('📦 Sample orders created')
+  console.log('Sample orders created')
 }
 
 async function seedForumPosts(allUsers) {
@@ -168,7 +168,7 @@ async function seedForumPosts(allUsers) {
       },
     })
   }
-  console.log(`💬 ${POST_COUNT} forum posts created`)
+  console.log(`${POST_COUNT} forum posts created`)
 }
 
 async function seedRentalSpaces(vendorProfiles) {
@@ -184,7 +184,7 @@ async function seedRentalSpaces(vendorProfiles) {
       },
     })
   }
-  console.log('🏡 Rental spaces created')
+  console.log('Rental spaces created')
 }
 
 async function seedCertifications(vendorProfiles) {
@@ -200,7 +200,7 @@ async function seedCertifications(vendorProfiles) {
       },
     })
   }
-  console.log('📜 Sustainability certifications created')
+  console.log('Sustainability certifications created')
 }
 
 async function seedPlantLogs(customers, vendorProfiles) {
@@ -223,11 +223,11 @@ async function seedPlantLogs(customers, vendorProfiles) {
       })
     }
   }
-  console.log('🌱 Plant tracking logs created')
+  console.log('Plant tracking logs created')
 }
 
 async function main() {
-  console.log('\n🌿 GreenRoots — Seeding database...\n')
+  console.log('\nGreenRoots — Seeding database...\n')
 
   await wipeDatabase()
 
@@ -242,7 +242,7 @@ async function main() {
   await seedCertifications(profiles)
   await seedPlantLogs(customers, profiles)
 
-  console.log('\n✅ Seeding complete!')
+  console.log('\nSeeding complete!')
   console.log('─────────────────────────────────────────────')
   console.log('  Admin      →  admin@greenroots.dev  /  Admin@1234')
   console.log('  Vendor     →  (check DB)            /  Vendor@1234')
@@ -252,7 +252,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    console.error('❌ Seed failed:', err)
+    console.error('Seed failed:', err)
     process.exit(1)
   })
   .finally(() => prisma.$disconnect())
